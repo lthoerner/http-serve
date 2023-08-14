@@ -1,8 +1,9 @@
 use std::net::{Ipv4Addr, SocketAddr};
 
 use axum::body::Bytes;
-use axum::response::Html;
+use axum::response::{Html, IntoResponse};
 use axum::{routing::get, Router};
+use tokio::fs::File;
 
 #[tokio::main]
 async fn main() {
@@ -21,6 +22,14 @@ async fn foo() -> Html<&'static str> {
     Html(include_str!("../assets/foo.html"))
 }
 
-async fn serve_video() -> Bytes {
-    Bytes::from_static(include_bytes!("../assets/sample_video.mp4"))
+async fn serve_video() -> impl IntoResponse {
+    let file = match File::open("assets/sample_video.mp4").await {
+        Ok(file) => file,
+        Err(_) => {
+            let response = Html("File not found");
+            return Err(response);
+        }
+    };
+
+    todo!()
 }
